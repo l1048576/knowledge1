@@ -1,0 +1,177 @@
+---
+title: "rrsync"
+description: "rrsyncについて"
+created_at: 2016-10-07T13:15:18+0900
+updated_at: 2016-10-07T13:15:18+0900
+tags:
+  - "0740b22c-0d09-46b6-904c-2826ce77e77d"
+  - "1b02d39a-f626-477c-9d0d-da3bed382882"
+---
+= rrsync
+
+`rrsync` はssh接続で安全にrsyncコマンドのみを実行させるためのサーバ用スクリプトである。
+(link:https://linux.die.net/man/1/rsync[rsync(1) - Linux man page] によると、 "restricted rsync" である。)
+
+`rrsync` は、読み書き対象のディレクトリの制限、読み込み専用/書き込み専用の指定などを行う。
+
+[[usage]]
+== 使用法
+
+[[usage-server-side]]
+=== サーバ側
+[.filepath]`$\{HOME}/.ssh/authorized_keys` に以下のように行を追加する。
+
+[source]
+.[.filepath]`$\{HOME}/.ssh/authorized_keys`
+----
+command="/path/to/rrsync -wo /path/to/the/directory/",no-pty,no-port-forwarding,no-agent-forwarding ssh-ed25519 AAAA... hoge@example.com"
+----
+
+`command` は、指定された鍵の使用時に実行されるコマンドである。
+普通は標準のシェルだが、ここで `rrsync` を指定してやることで、この鍵でのログイン時に必ず `rrsync` が実行されることになる。
+すなわち、シェルの起動を阻止できるので、より安全になる。
+
+`-wo` は書き込み専用の指定である。
+この指定のある場合、サーバからリモート(クライアント)へのファイル転送が拒否される。
+`-ro` も同様に読み込み専用の指定で、この指定があるとリモート(クライアント)からサーバへのファイル転送が拒否される。
+これらのオプションは相互に排他的である。
+これらのオプションを指定しない場合、読み書きどちらも可能になる。
+
+`no-pty`, `no-port-forwarding`, `no-agent-forwarding` についてはここでは説明しない。
+`rsync` のみでのアクセスであれば不要な機能を無効化するだけなので、とにかく書いておけば問題ない。
+
+`ssh-ed25519 ...` 以降は、公開鍵をそのまま貼り付けるだけでよい。
+
+[[usage-client-side]]
+=== クライアント側
+クライアントでは特別な準備は必要ない。
+通常のrsync over SSHと同様に起動するが、ここで `ssh` にはサーバ側の `authorized_keys` で `rrsync` を使うよう指定した鍵と対になる秘密鍵を指定する。
+
+[.code.code-terminal]
+[source]
+----
+$ rsync -e 'ssh -i /path/to/secret-key' user@host.example.com:hoge ./files/
+----
+
+これで、サーバの `/path/to/the/directory/hoge` 以下に、ローカルの `./files/` 以下のファイルとディレクトリが転送される。
+
+
+[[tips]]
+== Tips
+- SSH鍵はパスワードなしで作るとrsyncによる転送を自動化できるので、CI等との相性が良くなる。
+- `rrsync` はデフォルトではコマンドとしてインストールされない場合がある。
+  * gentooでは `/usr/share/rsync/rrsync` に実行可能フラグの立った状態で導入されている。
+  * Debian系では `/usr/share/doc/rsync/scripts/rrsync.gz` にあるらしい。
+
+
+[[use-without-perl]]
+== Perlのない環境での利用
+`rrsync` はPerlで書かれているため、勿論動作には `perl` が必要になる。
+しかし、CoreOS等の制限された環境においては `perl` が存在しないことがある。
+
+どうしてもCoreOSで `rrsync` を使いたかったため、こういった非perl環境において `rrsync` 相当の機能を持つシェルスクリプト `rrsync.sh` を実装した。
+Perlやbashなしでも動くはずである。
+
+[[listing-rrsync-sh]]
+[source, sh]
+.[filepath]`rrsync.sh` (2016-10-07)
+----
+#!/bin/sh
+
+USAGE="Use command=\"$0 [-ro|-wo] SUBDIR\"
+	in front of lines in ${HOME}/.ssh/authorized_keys"
+LOGFILE="${HOME}/rsync.log"
+CMDNAME="$0"
+
+
+# Die with the given error message.
+die() {
+	DATETIME="$(LANG=C date '+%F %T')"
+	echo "[$DATETIME] $CMDNAME: $1" >>"$LOGFILE"
+	echo >>"$LOGFILE"
+	exit 2
+}
+
+# Log the given message.
+debug() {
+	DATETIME="$(LANG=C date '+%F %T')"
+	echo "[$DATETIME][DEBUG] $1" | tr '\n' '\0' | sed -e 's/\0/\n[DEBUG]'"$DATETIME"'/g' >>"$LOGFILE"
+}
+
+
+# Get "only" option.
+# It would be "w" for `-wo` (write only), "r" for `-ro` (read only), or empty string (neither `-ro` nor `-wo`).
+ONLY=""
+while [ "x$1" = "x-ro" -o "x$1" = "x-wo" ] ; do
+	if [ "x$1" = "x-ro" ] ; then
+		if [ "x$ONLY" = "xw" ] ; then
+			die "the -ro and -wo options conflict."
+		fi
+		ONLY="r"
+		shift
+	else
+		if [ "x$ONLY" = "xr" ] ; then
+			die "the -ro and -wo options conflict."
+		fi
+		ONLY="w"
+		shift
+	fi
+done
+# Now "$ONLY" has "r", "w" or "".
+
+# Ensure the subdirectory is given.
+if [ $# -lt 1 ] ; then
+	die "No subdirectory specified.\n${USAGE}"
+fi
+ALLOWED_DIR="$1"
+cd "$ALLOWED_DIR"
+
+# Ensure the rrsync is invoked via sshd.
+if [ -z "$SSH_ORIGINAL_COMMAND" ] ; then
+	die "Not invoked via sshd.\n${USAGE}"
+fi
+
+# Ensure the rrsync is invoked in server mode via remote rsync.
+if ! echo "$SSH_ORIGINAL_COMMAND" | grep -sqE '^rsync\s+--server' ; then
+	die "SSH_ORIGINAL_COMMAND='$SSH_ORIGINAL_COMMAND' is not 'rsync --server' or '--server' is not specified first."
+fi
+
+# Check whether the rsync server should be sender or receiver.
+if echo "$SSH_ORIGINAL_COMMAND" | grep -sqE '^rsync\s+--server\s+--sender\s' ; then
+	# The local rsync is sender mode, i.e. files should be sent from local to remote.
+	if [ "x$ONLY" = "xw" ] ; then
+		die "Sending to read-only server not allowed."
+	fi
+else
+	# The local rsync is receiver mode, i.e. files should be sent from remote to local.
+	if [ "x$ONLY" = "xr" ] ; then
+		die "Reading to write-only server not allowed."
+	fi
+fi
+
+# Command line sanity check.
+set -f
+set -- $SSH_ORIGINAL_COMMAND
+# For each argument:
+while [ $# -ge 1 ] ; do
+	# Collapse continuous slashes in the argument.
+	ARG="$(echo "$1" | sed -e 's!///*!/!g')"
+	# Ensure the argument has no ".." as argument.
+	if echo "$ARG" | grep -sqE '(^(-[a-zA-Z0-9-]+=?)?|/)\.\.(/|$)' ; then
+		debug "command line: ${SSH_ORIGINAL_COMMAND}\ndangerous argument: `$1`"
+		die "Do not use .. in option argument, anchor the path at the root of your restricted dir."
+	fi
+	# Ensure the argument has no absolute path.
+	if echo "$ARG" | grep -sq '^/' ; then
+		debug "command line: ${SSH_ORIGINAL_COMMAND}\ndangerous argument: `$1`"
+		die "Do not use absolute path in argument, anchor the path at the root of your restricted dir."
+	fi
+	shift
+done
+
+# Arguments are safe!
+# Execute rsync.
+exec $SSH_ORIGINAL_COMMAND
+----
+
+(参考: link:https://gist.github.com/l1048576/d120d139e091f2338d35e1de85f9315f[gist])

@@ -1,0 +1,9 @@
+---
+title: Tags
+---
+<%# sorted_tags = tags.values.sort_by{|item| updated_time(item)}.reverse %>
+<% sorted_tags = tags.values.sort_by{|item| item[:title]} %>
+<article>
+	<h1>Tags</h1>
+	<%= render '/part/tag-list.*', target_items: sorted_tags %>
+</article>

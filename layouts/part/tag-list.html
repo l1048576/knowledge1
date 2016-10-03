@@ -1,0 +1,14 @@
+<div class="tag-list">
+	<dl>
+	<% @target_items.each do |item| %>
+			<dt><%= link_to "#{h item[:title]}", item %></dt>
+			<dd>
+				<div><!-- description -->
+					<p>
+						<%= h(item[:description] || "(No summary provided.)") %>
+					</p>
+				</div>
+			</dd>
+		<% end %>
+	</dl>
+</div>

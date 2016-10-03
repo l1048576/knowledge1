@@ -1,0 +1,25 @@
+---
+title: "DBMSに関するリンク集"
+description: "DBMSに関するリンク集"
+created_at: 2016-10-06T14:48:40+0900
+updated_at: 2016-10-06T14:48:40+0900
+tags:
+  - '0eb83d3b-ace3-462b-92e8-46636c92b847'
+  - 'beb1de82-b349-4635-b8a1-9b7cb1883ad2'
+---
+= DBMSに関するリンク集
+
+
+[[whole-rdbms]]
+== RDBMS全般
+link:http://uehaj.hatenablog.com/entry/20081210/1228903049[ＲＤＢＭＳの（ごくごく大局的な）問題点 - uehaj's blog^]::
+    **未読**。
+
+
+[[implementations]]
+== 実装・製品
+link:https://nukep.github.io/progblog/2015/04/15/developing-llamadb.html[Developing LlamaDB - The pet SQL database^]::
+    Rustで書かれたRDBMS。
++
+内部実装についてコード例を交えて軽く説明している。
+まとめにSQL難しい、1970年代にここまでのものを作った奴らマジウィザード、などと書いてある。

@@ -1,0 +1,19 @@
+<% header_level = @header_level || 2 %>
+<% header_open_tag = "<h#{header_level}>" %>
+<% header_close_tag = "</h#{header_level}>" %>
+<div class="article-list">
+<% @target_items.each do |item| %>
+	<section>
+		<%= header_open_tag %><%= link_to "#{h item[:title]}", item %><%= header_close_tag %>
+		<div style="font-size: 80%"><!-- article metadata -->
+			<%= render '/part/created-at.*', target: item %>
+			<%= render '/part/inline-tags.*', target: item %>
+		</div>
+		<div><!-- description -->
+			<p>
+				<%= h(item[:description] || "(No summary provided.)") %>
+			</p>
+		</div>
+	</section>
+<% end %>
+</div>

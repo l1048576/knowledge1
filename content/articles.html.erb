@@ -1,0 +1,12 @@
+---
+title: Articles
+---
+<% limit = 50 %>
+<% sorted_articles = articles.values.sort_by{|item| updated_time(item)}.reverse[0...limit] %>
+<article>
+	<h1>Articles</h1>
+	<section>
+		<h2>Recently created</h2>
+		<%= render '/part/article-list.*', target_items: sorted_articles, header_level: 3 %>
+	</section>
+</article>

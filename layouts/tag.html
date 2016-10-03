@@ -1,0 +1,25 @@
+<% render '/page-base.*' do %>
+<% tag_uuid = /([^\/]+)\.adoc$/.match(@item.identifier.to_s)[1] %>
+<% tag_name = h @item[:title] %>
+
+<section>
+	<h1><%= tag_name %></h1>
+	<aside class="tag-info">
+		<%= render '/part/created-at.*' %>
+	</aside>
+	<hr />
+	<%= yield %>
+	<hr />
+</section>
+
+<% target_items = articles.values.select{|item| (item[:tags] || []).include?(tag_uuid)} %>
+<% if !target_items.empty? %>
+	<section>
+		<h1>Articles: <%= tag_name %></h1>
+		<%= render '/part/article-list.*', target_items: target_items.sort_by{|item| updated_time(item)}.reverse, header_level: 2 %>
+	</section>
+<% else %>
+	<p>There's no article with tag <%= tag_name %>.</p>
+<% end %>
+
+<% end %>

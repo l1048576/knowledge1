@@ -1,0 +1,14 @@
+<% target = @target || @item %>
+<div class="tags">
+	<p>
+		<i class="fa fa-tags"></i>Tags:
+		<% if target_tags = target[:tags] %>
+			<% target_tags.each do |tag_uuid| %>
+				<i class="fa fa-tag"></i>
+				<%= link_to_tag tag_uuid %>
+			<% end %>
+		<% else %>
+			(none)
+		<% end %>
+	</p>
+</div>

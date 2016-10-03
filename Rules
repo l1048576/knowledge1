@@ -1,0 +1,93 @@
+#!/usr/bin/env ruby
+
+preprocess do
+  articles.each do |uuid, item|
+    item[:uuid] = uuid
+  end
+  tags.each do |uuid, item|
+    item[:uuid] = uuid
+  end
+end
+
+
+# sass partials.
+ignore '/**/_*'
+
+
+compile '/assets/**/*.scss' do
+  filter :sass, syntax: :scss
+  filter :relativize_paths, type: :css
+end
+
+compile '/articles/**/*.adoc' do
+  filter :larry_asciidoc, attributes: {
+    "tag_titles" => tag_titles,
+    "article_titles" => article_titles,
+  }
+  filter :colorize_syntax, :default_colorizer => :pygmentsrb
+  layout '/article.*'
+  filter :relativize_paths, type: :html
+end
+
+compile '/tags/**/*.adoc' do
+  filter :larry_asciidoc, attributes: {
+    "tag_titles" => tag_titles,
+    "article_titles" => article_titles,
+  }
+  filter :colorize_syntax, :default_colorizer => :pygmentsrb
+  layout '/tag.*'
+  filter :relativize_paths, type: :html
+end
+
+compile '/*.html.erb' do
+  filter :erb
+  layout '/page-base.*'
+  filter :relativize_paths, type: :html
+end
+
+compile '/*/*.html.erb' do
+  filter :erb
+  layout '/page-base.*'
+  filter :relativize_paths, type: :html
+end
+
+compile '/**/*' do
+  write item.identifier.to_s
+end
+
+
+route %r[^/(articles|tags)/(?:[^/]+/)*(\h{8}-\h{4}-\h{4}-\h{4}-\h{12})\.adoc$] do |kind, uuid|
+  "/#{kind}/#{uuid}/index.html"
+end
+
+route '/assets/**/*.scss' do
+  @item.identifier.without_ext + '.css'
+end
+
+route '/assets/**/*' do
+  @item.identifier.to_s
+end
+
+route %r[^(.*)/index\.html\.erb$] do |path, _|
+  "#{path}/index.html"
+end
+
+route %r[^(.*)\.html\.erb$] do |path, _|
+  "#{path}/index.html"
+end
+
+layout '/**/*', :erb
+
+
+postprocess do
+  File.open("articles.txt", "w") do |f|
+    article_titles.sort_by{|uuid, _| uuid}.each do |uuid, title|
+      f.puts("#{uuid}\t#{title}")
+    end
+  end
+  File.open("tags.txt", "w") do |f|
+    tag_titles.sort_by{|uuid, _| uuid}.each do |uuid, title|
+      f.puts("#{uuid}\t#{title}")
+    end
+  end
+end

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8" />
+	<title><%= h @item[:title] %> - <%= h @config[:site_name] %></title>
+	<!-- font awesome -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
+
+	<!-- normalize css -->
+	<!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css" />-->
+	<!-- sanitize.css -->
+	<link rel="stylesheet" href="/assets/css/sanitize.css" />
+
+	<!-- pygments -->
+	<link rel="stylesheet" href="/assets/css/pygments/colorful.css" />
+	<!--<link rel="stylesheet" href="/assets/css/pygments/monokai.css" />-->
+
+	<!-- original css -->
+	<link rel="stylesheet" href="/assets/css/knowledge1.css" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+
+	<% if @config[:base_url] && @item.path %>
+		<link rel="canonical" href="<%= @config[:base_url] + @item.path %>" />
+	<% end %>
+
+	<!-- atom feed -->
+	<!--<link rel="alternate" type="application/atom+xml" href="/feed.xml" title="<%= h @config[:site_name] %>" />-->
+
+	<% if description = @item[:description] %>
+		<meta name="description" content="<%= h description %>" />
+	<% end %>
+
+	<%= render '/part/metadata-for-sns.*' %>
+
+	<meta name="generator" content="Nanoc <%= Nanoc::VERSION %>">
+</head>
+<body>
+	<%= render '/part/browser-warnings.*' %>
+	<header>
+		<div class="size-container">
+			<h1><a href="/"><%= h @config[:site_name] %></a></h1>
+		</div>
+	</header>
+	<main>
+		<div class="size-container">
+			<%= yield %>
+		</div>
+	</main>
+	<footer>
+		<div class="size-container">
+		</div>
+	</footer>
+</body>
+</html>

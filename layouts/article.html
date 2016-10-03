@@ -1,0 +1,14 @@
+<% render '/page-base.*' do %>
+<% stem = /([^\/]+)\.adoc$/.match(@item.identifier.to_s)[1] %>
+
+<article>
+	<h1><%= h @item[:title] %></h1>
+	<aside class="article-info">
+		<%= render '/part/created-at.*' %>
+		<%= render '/part/inline-tags.*' %>
+	</aside>
+	<hr />
+	<%= yield %>
+</article>
+
+<% end %>
