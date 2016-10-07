@@ -15,6 +15,11 @@ tags:
 link:http://uehaj.hatenablog.com/entry/20081210/1228903049[ＲＤＢＭＳの（ごくごく大局的な）問題点 - uehaj's blog^]::
     **未読**。
 
+link:http://postd.cc/how-does-a-rdb-work-1/[リレーショナルデータベースの仕組み (1/3) | コンピュータサイエンス | POSTD]::
+link:http://postd.cc/how-does-a-rdb-work-2/[リレーショナルデータベースの仕組み (2/3) | コンピュータサイエンス | POSTD]::
+link:http://postd.cc/how-does-a-rdb-work-3/[リレーショナルデータベースの仕組み (3/3) | コンピュータサイエンス | POSTD]::
+    RDBMS全般の内部実装についての詳しい解説。
+
 
 [[implementations]]
 == 実装・製品
