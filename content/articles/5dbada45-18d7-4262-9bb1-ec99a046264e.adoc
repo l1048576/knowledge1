@@ -1,0 +1,36 @@
+---
+title: "L・T^n"
+description: "変位に時間のn乗かけた単位"
+created_at: 2016-10-28T13:25:39+0900
+updated_at: 2016-10-28T13:25:39+0900
+tags:
+  - "44a470dc-32cf-49d0-978f-bed1e317785b"
+  - "b9f3e21f-0b7c-4ca7-939f-8ddadb75eddf"
+---
+= L・T\^n
+
+[[name]]
+== 名称
+
+.L・T^n^の名称
+|====
+| L・T^-4^  | Jounce            |
+| L・T^-3^  | Jerk, Jolt        | 躍度、加加速度
+| L・T^-2^  | Acceleration      | 加速度
+| L・T^-1^  | Velocity          | 速度
+| L         | Displacement      | 変位
+| L・T      | Absement          |
+| L・T^2^   | Absity            |
+| L・T^3^   | Abseleration      |
+| L・T^4^   | Abserk            |
+|====
+
+Absement は "**abse**nce" と "displace**ment**" から作られたものらしいfootnote:[http://wearcam.org/absement/examples.htm]。
+
+
+[[references]]
+== 参考
+- Wikipedia
+  *  link:https://en.wikipedia.org/wiki/Absement[Absement - Wikipedia]
+  *  link:https://ja.wikipedia.org/wiki/%E8%BA%8D%E5%BA%A6[躍度 - Wikipedia]
+- link:http://wearcam.org/absement/examples.htm[Absement is the time-integral of displacement]
