@@ -185,6 +185,17 @@ ul.htags {
 }
 
 
+// Permalink.
+h1, h2, h3, h4, h5, h6 {
+    >a.anchor::before {
+        display: inline-block;
+        margin-right: 0.2em;
+        // f0c1: fa-link
+        @include font-awesome("\f0c1");
+        text-decoration: none;
+        color: #aaa;
+    }
+}
 // Alternative to permalink.
 article {
 	h1, h2, h3, h4, h5, h6 {

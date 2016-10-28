@@ -23,6 +23,7 @@ compile '/articles/**/*.adoc' do
   filter :larry_asciidoc, attributes: {
     "tag_titles" => tag_titles,
     "article_titles" => article_titles,
+    "sectanchors" => "",
   }
   filter :colorize_syntax, :default_colorizer => :pygmentsrb
   layout '/article.*'
@@ -33,6 +34,7 @@ compile '/tags/**/*.adoc' do
   filter :larry_asciidoc, attributes: {
     "tag_titles" => tag_titles,
     "article_titles" => article_titles,
+    "sectanchors" => "",
   }
   filter :colorize_syntax, :default_colorizer => :pygmentsrb
   layout '/tag.*'
