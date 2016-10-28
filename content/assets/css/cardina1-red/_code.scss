@@ -16,7 +16,7 @@
 pre.code {
 	@extend %code-block;
 }
-pre >code {
+pre >code:only-child {
 	@extend %code-block;
 	border: none;
 	border-radius: 0.2rem;
