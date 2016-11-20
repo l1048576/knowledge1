@@ -1,0 +1,954 @@
+---
+title: "FBX 7.4 におけるオブジェクトノード"
+description: "FBX 7.4 におけるオブジェクトノード"
+created_at: 2016-11-20T23:04:07+0900
+tags:
+  - "27fdba0a-7086-496d-88f6-3605ddd51db0"
+---
+= FBX object nodes
+:icons: font
+:toc:
+
+[[overview]]
+== Overview
+FBXのオブジェクトは、オブジェクトをノードとして有向非巡回グラフを形成する。
+しかしFBX形式は直接には木構造しか表現できないため、ルート直下の `Objects` ノード以下にグラフのノードを、ルート直下の `Connections` ノード以下にグラフのエッジを持つことでグラフを表現する。
+
+
+[[subtrees]]
+== Subtrees
+オブジェクトは有向グラフ構造ではあるが、その意味や用途に応じていくつかの種類のノードのみを選択することで、ノードを複数の木で共有するような木構造として分解することができる。
+
+
+[[subtrees-models]]
+=== Models
+<<root>>, <<Model_Mesh>>, <<Model_Null>>, <<NodeAttribute_Null>>
+をノードとする部分グラフは木構造となる。
+
+- root: <<root>>
+  * <<Model_Null>> 0個以上
+  * <<Model_Mesh>> 0個以上
+- <<Model_Null>>
+  * <<Model_Null>> 0個以上
+  * <<NodeAttribute_Null>> 1個
+  * <<Model_Mesh>> 0個以上
+- leaf: <<NodeAttribute_Null>>
+- <<Model_Mesh>>
+  * <<Model_Mesh>> 0か1個？ 0個以上？
+  * leafにもなる
+  * これ以下は <<subtrees-meshes-and-deformers>> を参照
+
+
+[[subtrees-meshes-and-deformers]]
+=== Meshes and deformers
+<<Model_Mesh>>, <<Geometry_Mesh>>,
+<<Deformer_Skin>>, <<Deformer_BlendShape>>,
+<<SubDeformer_Cluster>>, <<SubDeformer_BlendShapeChannel>>,
+<<AnimCurveNode_>>
+をノードとする部分グラフは木構造となる。
+
+- root: <<Model_Mesh>>
+  * <<Geometry_Mesh>> 1個
+  * <<AnimCurveNode_>> 0個以上
+  * <<Model_Mesh>> 0か1個？ 0個以上？
+- leaf: <<AnimCurveNode_>>
+- <<Geometry_Mesh>>
+  * <<Deformer_Skin>> 0か1個
+  * <<Deformer_BlendShape>> 0か1個
+- <<Deformer_Skin>>
+  * <<SubDeformer_Cluster>> 0個以上
+- leaf: <<SubDeformer_Cluster>>
+- <<Deformer_BlendShape>>
+  * <<SubDeformer_BlendShapeChannel>> 0個以上
+- leaf: <<SubDeformer_BlendShapeChannel>>
+
+
+[[subtrees-limbnodes]]
+=== Limbnodes
+<<root>>, <<Model_Mesh>>, <<Model_Null>>, <<Model_LimbNode>>,
+<<NodeAttribute_Null>>, <<NodeAttribute_LimbNode>>
+をノードとする部分グラフは木構造となる。
+
+- root: <<root>>
+  * <<Model_Null>> 0個以上
+  * <<Model_Mesh>> 0個以上
+- leaf: <<Model_Mesh>>
+  * これ以下は <<subtrees-meshes-and-deformers>> を参照
+- <<Model_Null>>
+  * <<Model_Null>> 0個以上
+  * <<Model_Mesh>> 0個以上
+  * <<NodeAttribute_Null>> 1個
+- leaf: <<NodeAttribute_Null>>
+- <<Model_LimbNode>>
+  * <<Model_LimbNode>> 0個以上
+  * <<Model_Null>> 0か1個？ 0個以上？
+  * <<NodeAttribute_LimbNode>> 1個
+- leaf: <<NodeAttribute_LimbNode>>
+
+
+[[subtrees-animations]]
+=== Animations
+<<AnimLayer_>>, <<AnimCurveNode_>>
+をノードとする部分グラフは木構造となる。
+
+(もしかすると <<AnimLayer_>> の親として <<AnimStack_>> を持ってきても木になるかもしれないが、情報が足りないため確証が持てない。)
+
+- root: <<AnimLayer_>>
+  * <<AnimCurveNode_>> 0個以上
+- leaf: <<AnimCurveNode_>>
+
+
+[[object-types]]
+== Object types
+- xref:root[]
+- xref:AnimCurveNode_[]
+- xref:AnimLayer_[]
+- xref:AnimStack_[]
+- xref:Deformer_BlendShape[]
+- xref:Deformer_Skin[]
+- xref:DisplayLayer_DisplayLayer[]
+- xref:Geometry_Mesh[]
+- xref:Geometry_Shape[]
+- xref:Material_[]
+- xref:Model_Camera[]
+- xref:Model_Light[]
+- xref:Model_LimbNode[]
+- xref:Model_Mesh[]
+- xref:Model_Null[]
+- xref:NodeAttribute_Camera[]
+- xref:NodeAttribute_Light[]
+- xref:NodeAttribute_LimbNode[]
+- xref:NodeAttribute_Null[]
+- xref:Pose_BindPose[]
+- xref:SubDeformer_BlendShapeChannel[]
+- xref:SubDeformer_Cluster[]
+- xref:Texture_[]
+- xref:Video_Clip[]
+
+
+[[root]]
+=== root
+オブジェクトIDが `0` であるオブジェクト。
+暗黙に定義されるものであり、FBXデータ中にノードを持たない。
+
+==== 親
+なし。
+
+==== 子
+|====
+| <<Model_Mesh>>    | 0個以上
+| <<Model_Camera>>  | 0個以上
+| <<Model_Light>>   | 0個以上
+| <<Model_Null>>    | 0個以上
+|====
+
+`Model` class を持つオブジェクトであれば何でも持てるということだろうか。
+詳細は不明。
+
+==== 構造上の子ノード
+任意のオブジェクトノード。
+
+
+[[AnimCurveNode_]]
+=== `AnimCurveNode`
+ノード名 `AnimationCurveNode` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+|====
+| <<AnimLayer_>>        | 1個               |
+| <<Model_LimbNode>>    | 1個？ 0か1個？    | `OP` (`Lcl Translation`)
+| <<Model_LimbNode>>    | 1個？ 0か1個？    | `OP` (`Lcl Scaling`)
+| <<Model_LimbNode>>    | 1個？ 0か1個？    | `OP` (`Lcl Rotation`)
+|====
+
+==== 子
+|====
+| implicit              | 1個？ 0か1個？    | `OP` (`d\|X`)
+| implicit              | 1個？ 0か1個？    | `OP` (`d\|Y`)
+| implicit              | 1個？ 0か1個？    | `OP` (`d\|Z`)
+|====
+
+==== 構造上の子ノード
+|====
+| `Properties70`        | 子ノードあり
+|====
+
+==== 解説
+<<AnimLayer_>> からは Translation, Scaling, Rotation 関係なく `OO` で接続されており、 <<AnimLayer_>> → <<AnimCurveNode_>> の方向でアクセスするのはほとんど意味がないように思われる。
+
+暗黙のノードへは `d|X`, `d|Y`, `d|Z` の名前で、 `OP` の接続が存在する。
+これに関連付けられた値があるかは未調査。
+
+
+[[AnimLayer_]]
+=== `AnimLayer`
+ノード名 `AnimationLayer` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+|====
+| <<AnimStack_>>    | 1個？ 1個以上？
+|====
+
+==== 子
+|====
+| <<AnimCurveNode_>>    | 0個以上
+|====
+
+==== 構造上の子ノード
+なし。
+
+==== 解説
+テストファイル中で唯一確認できたのが、 `unitychan.fbx` の `AnimLayer::Base Layer` であった。
+
+<<AnimLayer_>> からは Translation, Scaling, Rotation 関係なく `OO` で接続されている。
+
+親の <<AnimStack_>> は、そもそも確認に用いたファイルに <<AnimStack_>> が複数存在するものがなかったため、複数の親を持てるのかは不明。
+
+
+[[AnimStack_]]
+=== `AnimStack`
+ノード名 `AnimationStack` 。
+
+いわゆる "take" のようなものと思われる。
+詳細不明。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+なし。
+
+==== 子
+|====
+| <<AnimLayer_>>    | 1個？ 1個以上？
+|====
+
+==== 構造上の子ノード
+|====
+| `Properties70`        | 子ノードあり
+|====
+
+==== 解説
+テストファイル中で唯一確認できたのが、 `unitychan.fbx` の `AnimStack::Take 001` であった。
+名前からして "take" なのだろう。
+
+
+[[Deformer_BlendShape]]
+=== `Deformer (BlendShape)`
+ノード名 `Deformer` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+|====
+| <<Geometry_Mesh>> | 1個？ 1個以上？
+|====
+
+==== 子
+|====
+| <<SubDeformer_BlendShapeChannel>> | 0個以上
+|====
+
+==== 構造上の子ノード
+|====
+| `Version`         | `i32`
+|====
+
+
+[[Deformer_Skin]]
+=== `Deformer (Skin)`
+ノード名 `Deformer` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+|====
+| <<Geometry_Mesh>> | 1個？ 1個以上？
+|====
+
+==== 子
+|====
+| <<SubDeformer_Cluster>>   | 0個以上
+|====
+
+==== 構造上の子ノード
+|====
+| `Version`             | `i32`
+| `Link_DeformAcuracy`  | `f64`
+| `SkinningType`        | `String`
+|====
+
+`SkinningType` には `Linear` という値が入っていた。
+
+[IMPORTANT]
+.`Link_DeformAcuracy`
+CamelCase と snake_case の混合という謎の命名、さらには "Acuracy" というtypoまでも含む謎のノード名であるが、これはこの文書の間違いではなく、実際にこういう名前である。
+
+
+[[DisplayLayer_DisplayLayer]]
+=== `DisplayLayer (DisplayLayer)`
+ノード名 `CollectionExclusive` 。
+
+optionalなノード。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+なし。
+
+==== 子
+|====
+| <<Model_Null>>    | 0個以上
+|====
+
+==== 解説
+`naka.fbx` と `kano.fbx` で確認されたが、 `unitychan.fbx` では確認されなかった。
+
+オブジェクト名は以下のようであった。
+
+- `naka.fbx`
+  * `Controllers`
+    ** 子は `Loc_grp` (<<Model_Null>>)
+  * `meshLayer`
+    ** 子は `model` (<<Model_Null>>)
+- `kano.fbx`
+  * `Kano2_Controllers`
+    ** 子は無し
+  * `Kano2_meshLayer`
+    ** 子は `Kano2_model` (<<Model_Null>>)
+
+オブジェクト名からして、モデルの木のルートである <<Model_Null>> と、その中で IK 等のためのコントローラのルートの <<Model_Null>> を指しているように思われる。
+
+
+[[Geometry_Mesh]]
+=== `Geometry (Mesh)`
+ノード名 `Geometry` 。
+
+メッシュの頂点等を持っている、非常に重要なオブジェクト。
+
+==== 親
+|====
+| <<Model_Mesh>>    | 1個？ 1個以上？
+|====
+
+==== 子
+|====
+| <<Deformer_Skin>>         | 1個？ 1個以上？
+| <<Deformer_BlendShape>>   | 0か1個？ 0個以上？
+|====
+
+==== 構造上の子ノード
+|====
+| `Vertices`                | `[f64]`   |               | 頂点配列。
+| `PolygonVertexIndex`      | `[i32]`   |               | 頂点インデックス配列。
+| `Edges`                   | `[i32]`   |               | 辺の配列。
+| `GeometryVersion`         | `i32`     |               | 辺の配列。
+| `LayerElementNormal`      | `i32`     | 子ノードあり  | 法線配列。0個以上
+| `LayerElementColor`       | `i32`     | 子ノードあり  | 頂点色配列。0個以上
+| `LayerElementUV`          | `i32`     | 子ノードあり  | テクスチャ座標配列。0個以上
+| `LayerElementMaterial`    | `i32`     | 子ノードあり  | マテリアル番号の配列。0個以上
+| `Layer`                   | `i32`     | 子ノードあり  | `LayerElement*` の組み合わせ情報。
+|====
+
+`LayerElement*` と `Layer` ノードは子ノードを持つ。
+
+[NOTE]
+.TODO
+Layer系ノードの構造はどこかで解説するべき
+
+==== 解説
+マテリアルは頂点や面ごとに異なるものを適用できるため、 `LayerElementMaterial` はマテリアルの番号の配列を持っている。
+(マテリアルそのものは <<Material_>> によって保持されている。)
+
+
+[[Geometry_Shape]]
+=== `Geomtery (Shape)`
+ノード名 `Geometry` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+|====
+| <<SubDeformer_BlendShapeChannel>> | 1個？ 1個以上？
+|====
+
+==== 子
+なし。
+
+==== 構造上の子ノード
+|====
+| `Version`     | `i32`
+| `Indexes`     | `[i32]`
+| `Vertices`    | `[f64]`
+| `Normals`     | `[f64]`
+|====
+
+==== 解説
+おそらく、 `Indexes` は元のメッシュの頂点インデックスか更にそのインデックスであり、 `Vertices` と `Normals` はその移動先の座標とそのときの法線を示している。
+
+
+[[Material_]]
+=== `Material ()`
+ノード名 `Material` 。
+
+subclassはない。
+
+==== 親
+|====
+| <<Model_Mesh>>    | 0個以上
+|====
+
+==== 子
+|====
+| <<Texture_>>  | 0か1個    | `OP` (`DiffuseColor`)
+| <<Texture_>>  | 0か1個    | `OP` (`TransparentColor`)
+|====
+
+==== 構造上の子ノード
+|====
+| `Version`         | `i32`     |
+| `ShadingModel`    | `String`  |
+| `MultiLayer`      | `i32`     |
+| `Properties70`    |           | 子ノードあり
+|====
+
+==== 解説
+マテリアル。
+
+`ShadingModel` が `lambert` または `phong` の値であれば、そのパラメータが `Properties70` に保持されている。
+
+ただし、 `ShadingModel` が `unknown` という値になることがあり、この場合 `Properties70` の中にユーザ定義型で情報が保持されている。
+この事例は `unitychan.fbx` の <<Material_>> ノード 132112464 で観測されたが、 `Properties70` の `Effect` や `Texture1` という項目に UTF-16 の XML が含まれていた。
+
+
+[[Model_Camera]]
+=== `Model (Camera)`
+ノード名 `Model` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+<<root>> 。
+
+==== 子
+|====
+| <<NodeAttribute_Camera>>  | 1個？ 1個以上？
+|====
+
+==== 構造上の子ノード
+|====
+| `Version`         | `i32`     |
+| `Properties70`    |           | 子ノードあり
+| `MultiLayer`      | `i32`     |
+| `MultiTake`       | `i32`     |
+| `Shading`         | `bool`    |
+| `Culling`         | `String`  |
+|====
+
+[NOTE]
+blender由来のデータによる確認なので、本来のFBX仕様に準拠したものか不明。
+
+==== 解説
+[NOTE]
+.TODO
+あとで書く
+
+
+[[Model_Light]]
+=== `Model (Light)`
+ノード名 `Model` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+<<root>> 。
+
+==== 子
+|====
+| <<NodeAttribute_Light>>   | 1個？ 1個以上？
+|====
+
+==== 構造上の子ノード
+|====
+| `Version`         | `i32`     |
+| `Properties70`    |           | 子ノードあり
+| `MultiLayer`      | `i32`     |
+| `MultiTake`       | `i32`     |
+| `Shading`         | `bool`    |
+| `Culling`         | `String`  |
+|====
+
+[NOTE]
+blender由来のデータによる確認なので本来のFBX仕様に準拠したものか不明。
+
+==== 解説
+[NOTE]
+.TODO
+あとで書く
+
+
+[[Model_LimbNode]]
+=== `Model (LimbNode)`
+ノード名 `Model` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+|====
+| <<SubDeformer_Cluster>>   | 0個以上
+| <<Model_LimbNode>> (自身) または <<Model_Null>>   | 1個
+| <<Model_LimbNode>>        | 0か1個？ 0個以上？
+|====
+
+==== 子
+|====
+| <<Model_Null>>            | 0個以上？ 0か1個？    |
+| <<Model_LimbNode>> (自身) | 0個以上           |
+| <<NodeAttribute_LimbNode>>    | 1個           |
+| <<AnimCurveNode_>>        | 1個？ 0か1個？    | `OP` (`Lcl Translation`)
+| <<AnimCurveNode_>>        | 1個？ 0か1個？    | `OP` (`Lcl Scaling`)
+| <<AnimCurveNode_>>        | 1個？ 0か1個？    | `OP` (`Lcl Rotation`)
+| implicit                  | 1個？ 0か1個？    | `OP` (`filmboxTypeID`)
+| implicit                  | 1個？ 0か1個？    | `OP` (`lockInfluenceWeights`)
+|====
+
+==== 構造上の子ノード
+|====
+| `Version`         | `i32`     |
+| `Properties70`    |           | 子ノードあり
+| `Shading`         | `bool`    |
+| `Culling`         | `String`  |
+|====
+
+==== 解説
+[NOTE]
+.TODO
+あとで書く
+
+
+[[Model_Mesh]]
+=== `Model (Mesh)`
+ノード名 `Model` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+|====
+| <<Model_Null>>    | 1個
+| <<Pose_BindPose>> | 1個
+|====
+
+または <<root>> のみ。
+
+==== 子
+|====
+| <<Geometry_Mesh>> | 1個
+| <<Material_>>     | 0個以上？ 1個以上？
+|====
+
+==== 構造上の子ノード
+|====
+| `Version`         | `i32`     |
+| `Properties70`    |           | 子ノードあり
+| `Shading`         | `bool`    |
+| `Culling`         | `String`  |
+|====
+
+==== 解説
+[NOTE]
+.TODO
+あとで書く
+
+
+[[Model_Null]]
+=== `Model (Null)`
+ノード名 `Model` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+|====
+| <<root>> または <<Model_LimbNode>> または <<Model_Null>> (自身)   | いずれか1個
+| <<DisplayLayer_DisplayLayer>> | 0か1個？ 0個以上？
+| <<Pose_BindPose>>             | 0か1個？ 0個以上？
+|====
+
+==== 子
+|====
+| <<Model_Mesh>>    | 0個以上
+| <<Material_>>     | 0個以上？ 1個以上？
+|====
+
+==== 構造上の子ノード
+|====
+| `Version`         | `i32`     |
+| `Properties70`    |           | 子ノードあり
+| `Shading`         | `bool`    |
+| `Culling`         | `String`  |
+|====
+
+==== 解説
+`Model` だけを見ると、は木構造を形成している。
+(ただし `Deformer` や `SubDeformer` や <<Geometry_Mesh>> を含めて見ればそうでもない)。
+
+[NOTE]
+.TODO
+あとで書く
+
+
+[[NodeAttribute_Camera]]
+=== `NodeAttribute (Camera)`
+ノード名 `NodeAttribute` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+|====
+| <<Model_Camera>>  | 1個
+|====
+
+==== 子
+なし。
+
+==== 構造上の子ノード
+|====
+| `Properties70`        |           | 子ノードあり
+| `TypeFlags`           | `String`  |
+| `GeometryVersion`     | `i32`     |
+| `Position`            | `f64`, `f64`, `f64`   |
+| `Up`                  | `f64`, `f64`, `f64`   |
+| `LookAt`              | `f64`, `f64`, `f64`   |
+| `ShowInfoOnMoving`    | `i32` |
+| `ShowAudio`           | `i32` |
+| `AudioColor`          | `f64`, `f64`, `f64`   |
+| `CameraOrthoZoom`     | `f64` |
+|====
+
+`TypeFlags` は `Camera` という値だった。
+むしろ他の値を取るようなことがあるのだろうか。
+
+[NOTE]
+blender由来のデータによる確認なので、本来のFBX仕様に準拠したものか不明。
+
+==== 解説
+[NOTE]
+.TODO
+あとで書く
+
+
+[[NodeAttribute_Light]]
+=== `NodeAttribute (Light)`
+ノード名 `NodeAttribute` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+|====
+| <<Model_Light>>   | 1個
+|====
+
+==== 子
+なし。
+
+==== 構造上の子ノード
+|====
+| `GeometryVersion`     | `i32` |
+| `Properties70`        |       | 子ノードあり
+|====
+
+[NOTE]
+blender由来のデータによる確認なので、本来のFBX仕様に準拠したものか不明。
+
+==== 解説
+[NOTE]
+.TODO
+あとで書く
+
+
+[[NodeAttribute_LimbNode]]
+=== `NodeAttribute (LimbNode)`
+ノード名 `NodeAttribute` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+|====
+| <<Model_LimbNode>>    | 1個
+|====
+
+==== 子
+なし。
+
+==== 構造上の子ノード
+|====
+| `Properties70`        |           | 子ノードあり
+| `TypeFlags`           | `String`  |
+|====
+
+`TypeFlags` は `Skelton` という値であった。
+
+==== 解説
+[NOTE]
+.TODO
+あとで書く
+
+
+[[NodeAttribute_Null]]
+=== `NodeAttribute (Null)`
+ノード名 `NodeAttribute` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+|====
+| <<Model_Null>>    | 1個
+|====
+
+==== 子
+なし。
+
+==== 構造上の子ノード
+|====
+| `Properties70`        |           | 子ノードあり
+| `TypeFlags`           | `String`  |
+|====
+
+`TypeFlags` は `Null` という値であった。
+
+==== 解説
+[NOTE]
+.TODO
+あとで書く
+
+
+[[Pose_BindPose]]
+=== `Pose (BindPose)`
+ノード名 `Pose` 。
+
+このノードは特殊で、 `Connections` による接続以外にも、構造上の子ノードである `PoseNode` の子 `Node` がIDを持っている。
+(というか、 `Connections` による接続があるか未確認。)
+
+[NOTE]
+.TODO
+あとで書く
+
+[NOTE]
+.TODO
+未調査
+
+==== 親
+なし。
+
+==== 子
+|====
+| <<Model_LimbNode>>    | 0個以上
+| <<Model_Mesh>>        | 0個以上
+| <<Model_Null>>        | 0個以上
+|====
+
+==== 解説
+[NOTE]
+.TODO
+あとで書く
+
+
+[[SubDeformer_BlendShapeChannel]]
+=== `SubDeformer (BlendShapeChannel)`
+ノード名 `Deformer` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+|====
+| <<Deformer_BlendShape>>   | 1個
+|====
+
+==== 子
+|====
+| <<Geometry_Shape>>    | 0個以上
+|====
+
+==== 構造上の子ノード
+|====
+| `Version`         | `i32`
+| `DeformPercent`   | `f64`
+| `FullWeights`     | `[f64]`
+|====
+
+==== 解説
+[NOTE]
+.TODO
+あとで書く
+
+
+[[SubDeformer_Cluster]]
+=== `SubDeformer (Cluster)`
+ノード名 `Deformer` 。
+
+[NOTE]
+.TODO
+あとで書く
+
+==== 親
+|====
+| <<Deformer_Skin>> | 1個
+|====
+
+==== 子
+|====
+| <<Model_LimbNode>>    | 1個
+|====
+
+==== 構造上の子ノード
+|====
+| `Version`         | `i32`
+| `UserData`        | `String`, `String`
+| `Indexes`         | `[i32]`
+| `Weights`         | `[f64]`
+| `Transform`       | `[f64]`
+| `TransformLink`   | `[f64]`
+|====
+
+`Indexes` と `Weights` は同じ要素数である。
+
+`Transform` と `TransformLink` は実際には4×4行列を持っているから、16要素である。
+
+==== 解説
+[NOTE]
+.TODO
+あとで書く
+
+
+[[Texture_]]
+=== `Texture ()`
+ノード名 `Texture` 。
+
+テクスチャ画像のファイル名やマッピング情報(UV set や拡大縮小)、ブレンドモードなどを持つ。
+
+テクスチャが埋め込まれている場合、 <<Video_Clip>> の `Content` ノードにバイナリデータとして格納されている。
+埋め込まれていない場合そもそもノードが存在するかは不明
+
+==== 親
+|====
+| <<Material_>> | 0か1個？ 1個？    | `OP` (`DiffuseColor`)
+| <<Material_>> | 0か1個            | `OP` (`TransparentColor`)
+|====
+
+==== 子
+|====
+| <<Video_Clip>>    | 1個？ 0個以上？
+|====
+
+==== 構造上の子ノード
+|====
+| `Type`                | `String`      |
+| `Version`             | `i32`         |
+| `TextureName`         | `String`      |
+| `Properties70`        |               | 子ノードあり
+| `Media`               | `String`      |
+| `FileName`            | `String`      |
+| `RelativeFilename`    | `String`      |
+| `ModelUVTranslation`  | `f64`, `f64`  |
+| `ModelUVScaling`      | `f64`, `f64`  |
+| `Texture_Alpha_Source`    | `String`  |
+| `Cropping`            | `i32`, `i32`, `i32`, `i32`    |
+|====
+
+`Type` の値は `TextureVideoClip` であった。
+おそらく <<Video_Clip>> をグラフ構造での子として持っていることと関係があるはずであるが、詳細は不明。
+
+`Media` は、グラフ構造での子として持っていた <<Video_Clip>> の2番目のノード属性(`sisA_13_MODelonly-polySurface82SG1_Flattened_Diffuse\x00\x01Video` など)の値を持つ。
+
+`FileName` は(おそらく)FBXファイル作成時のテクスチャファイルの絶対パスが入っている。
+(Windowsで作られたせいかは不明だが、 `D:\` で始まっていたりする。)
+
+`RelativeFilename` は、おそらく、カレントディレクトリかFBXファイルの場所を基準としたテクスチャファイルの相対パスである。
+テクスチャが埋め込まれたFBXファイルしか確認していないが、FBX SDKはFBXファイルのインポート時に、自動で埋め込みテクスチャをディスク上に展開する。
+`RelativeFilename` の持つ相対パスは、この展開されたテクスチャファイルのパス(たとえば `naka.fbm\Naka_hair_c.tga` 等)である。
+
+[IMPORTANT]
+.大文字のN、小文字のn
+`FileName` の `N` は小文字、 `RelativeFilename` の `n` は小文字である。
+
+
+==== 解説
+[NOTE]
+.TODO
+あとで書く
+
+
+[[Video_Clip]]
+=== `Video (Clip)`
+ノード名 `Video` 。
+
+テクスチャが埋め込まれている場合、構造上の子ノードである `Content` ノードにバイナリデータとして格納されている。
+埋め込まれていない場合、そもそもこのノードが存在するかは不明。
+
+また、動画がどのように保持されるかも不明。
+
+==== 親
+|====
+| <<Texture_>>  | 1個？ 1個以上？
+|====
+
+==== 子
+なし。
+
+==== 構造上の子ノード
+|====
+| `Type`                | `String`  |
+| `Properties70`        |           | 子ノードあり
+| `UseMipMap`           | `i32`     |
+| `Filename`            | `String`  |
+| `RelativeFilename`    | `String`  |
+| `Content`             | `[u8]`    |
+|====
+
+`Type` の値は `Clip` であった。
+
+`Filename` と `RelativeFilename` については、(その微妙に整合性のないノード名も含めて) <<Texture_>> と同様である。
+
+テクスチャが埋め込まれている場合、 `Content` にその内容が(圧縮等は無しで)格納される。
+埋め込まれていない場合は未確認。
+
+==== 解説
+[NOTE]
+.TODO
+あとで書く
